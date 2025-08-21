@@ -1,6 +1,7 @@
 package com.example.currency.dao;
 
 import com.example.currency.model.Currency;
+import com.example.currency.utils.Database;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -23,9 +24,9 @@ public class CurrencyDAO {
         List<Currency> currencies = new ArrayList<Currency>();
         String sql = "SELECT * FROM currencies ORDER BY id";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = Database.get();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 currencies.add(new Currency(
@@ -41,7 +42,10 @@ public class CurrencyDAO {
     }
 
     public Currency getCurrencyByCode(String code) throws SQLException {
-        String sql = "SELECT * FROM currencies WHERE code = ?";
+        String sql = """
+                SELECT * FROM currencies
+                WHERE code = ?
+                """;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
             PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -62,7 +66,11 @@ public class CurrencyDAO {
     }
 
     public Currency createCurrency(Currency currency) throws SQLException {
-        String sql = "INSERT INTO currencies (code, fullname, sign) VALUES (?, ?, ?) RETURNING id";
+        String sql = """
+                INSERT INTO currencies (code, fullname, sign)
+                VALUES (?, ?, ?) RETURNING id
+                """;
+
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
