@@ -1,5 +1,7 @@
 package com.example.currency.model;
 
+import java.util.Objects;
+
 public class Currency {
     private int id;
     private String code;
@@ -12,6 +14,8 @@ public class Currency {
         this.fullName = fullName;
         this.sign = sign;
     }
+
+    public Currency() {}
 
     public int getId() {
         return id;
@@ -43,5 +47,27 @@ public class Currency {
 
     public void setSign(String sign) {
         this.sign = sign;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Currency currency = (Currency) o;
+        return Objects.equals(code, currency.code);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(code);
+    }
+
+    @Override
+    public String toString() {
+        return "Currency{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", sign='" + sign + '\'' +
+                '}';
     }
 }

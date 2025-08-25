@@ -4,4 +4,15 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+
+  <servlet>
+    <servlet-name>CurrencyServlet</servlet-name>
+    <servlet-class>com.example.currency.controller.CurrencyServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>CurrencyServlet</servlet-name>
+    <url-pattern>/currencies/*</url-pattern>
+  </servlet-mapping>
 </web-app>
+

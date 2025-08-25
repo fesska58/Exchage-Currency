@@ -1,0 +1,8 @@
+PUT http://localhost:8081/CurrencyExchange/currencies/1
+Content-Type: application/json
+
+{
+  "code": "USD",
+  "fullName": "United States Dollar",
+  "sign": "$"
+}

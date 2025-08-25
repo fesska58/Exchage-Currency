@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CurrencyDAO {
-    private static final String URL = "jdbc:postgresql://localhost:5432/currency_exchange";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "postgres";
+    private static final CurrencyDAO INSTANCE = new CurrencyDAO();
+
+    private CurrencyDAO() {
+    }
+
+    public static CurrencyDAO getINSTANCE() {
+        return INSTANCE;
+    }
 
     static {
         try {
@@ -18,6 +23,28 @@ public class CurrencyDAO {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public Currency getById(int baseCurrencyId) throws SQLException{
+        String sql = "SELECT id, code, fullname, sign FROM currencies WHERE id = ?";
+
+        try (Connection conn = Database.get();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, baseCurrencyId);
+
+            try(ResultSet rs = stmt.executeQuery();) {
+                if (rs.next()) {
+                    return new Currency(
+                        rs.getInt("id"),
+                        rs.getString("code"),
+                        rs.getString("fullname"),
+                        rs.getString("sign")
+                    );
+                }
+            }
+        }
+        return null;
     }
 
     public List<Currency> getAllCurrencies() throws SQLException {
@@ -47,7 +74,7 @@ public class CurrencyDAO {
                 WHERE code = ?
                 """;
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = Database.get();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, code);
@@ -71,7 +98,7 @@ public class CurrencyDAO {
                 VALUES (?, ?, ?) RETURNING id
                 """;
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = Database.get();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, currency.getCode());
@@ -85,4 +112,40 @@ public class CurrencyDAO {
         }
         return currency;
     }
+
+    public Currency updateCurrency(int id, String code, String fullName, String sign) throws SQLException {
+        String sql = """
+                UPDATE currencies
+                SET code = ?, fullname = ?, sign = ?
+                WHERE id = ?
+                RETURNING id, code, fullname, sign
+                """;
+
+        try (Connection conn = Database.get()){
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, code);
+            ps.setString(2, fullName);
+            ps.setString(3, sign);
+            ps.setInt(4, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Currency currency = new Currency();
+                    currency.setId(rs.getInt("id"));
+                    currency.setCode(rs.getString("code"));
+                    currency.setFullName(rs.getString("fullname"));
+                    currency.setSign(rs.getString("sign"));
+                    return currency;
+                }else {
+                    return null;
+                }
+            }
+        }
+    }
+
+    public Currency updateCurrency(Currency currency) throws SQLException {
+        return updateCurrency(currency.getId(), currency.getCode(), currency.getFullName(), currency.getSign());
+    }
+
 }
