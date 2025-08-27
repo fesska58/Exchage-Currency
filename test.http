@@ -1,8 +1,11 @@
-PUT http://localhost:8081/CurrencyExchange/currencies/1
-Content-Type: application/json
+//*PUT http://localhost:8081/CurrencyExchange/currencies/1
+//Content-Type: application/json
 
-{
-  "code": "USD",
-  "fullName": "United States Dollar",
-  "sign": "$"
-}
+//{
+//  "code": "USD",
+//  "fullName": "United States Dollar",
+// "sign": "$"
+//}
+
+DELETE http://localhost:8081/CurrencyExchange/currencies/3
+//GET http://localhost:8081/CurrencyExchange/currencies

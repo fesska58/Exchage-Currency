@@ -4,6 +4,7 @@ import com.example.currency.model.Currency;
 import com.example.currency.model.ExchangeRate;
 import com.example.currency.utils.Database;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ExchangeRateDAO {
 
 
     public List<ExchangeRate> getAllExchangeRates() {
-        List<ExchangeRate> exchangeRates = new ArrayList<ExchangeRate>();
+        List<ExchangeRate> exchangeRates = new ArrayList<>();
         String sql = "SELECT * FROM exchange_rates";
 
         try(Connection conn = Database.get();
@@ -35,16 +36,29 @@ public class ExchangeRateDAO {
             ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Currency base = currencyDAO.getById(rs.getInt("base_currency_id"));
-                Currency target = currencyDAO.getById(rs.getInt("target_currency_id"));
-                exchangeRates.add(new ExchangeRate(
+                Currency base = new Currency(
+                        rs.getInt("base_id"),
+                        rs.getString("base_code"),
+                        rs.getString("base_name"),
+                        rs.getString("base_sign")
+                );
+
+                Currency target = new Currency(
+                        rs.getInt("target_id"),
+                        rs.getString("target_code"),
+                        rs.getString("target_name"),
+                        rs.getString("target_sign")
+                );
+
+                ExchangeRate rate = new ExchangeRate(
                         rs.getInt("id"),
                         base,
                         target,
                         rs.getBigDecimal("rate")
-                ));
-            }
+                );
 
+                exchangeRates.add(rate);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -53,7 +67,7 @@ public class ExchangeRateDAO {
     }
 
     // Найти курс по парам валют
-    public ExchangeRate getRate(String baseCode, String targetCode) throws SQLException {
+    public ExchangeRate getExchangeRate(String baseCode, String targetCode) throws SQLException {
         String sql = """
             SELECT id, base_currency_id, target_currency_id, rate
             FROM exchange_rates
@@ -85,7 +99,7 @@ public class ExchangeRateDAO {
     }
 
     // Добавить новый курс
-    public ExchangeRate create(ExchangeRate rate) throws SQLException {
+    public ExchangeRate createExchangeRate(ExchangeRate rate) throws SQLException {
         String sql = "INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)" +
                 " VALUES (?, ?, ?) RETURNING id";
 
@@ -102,5 +116,27 @@ public class ExchangeRateDAO {
             }
         }
         return rate;
+    }
+
+    public void updateExchangeRate(ExchangeRate rate) throws SQLException {
+        String sql = """
+                UPDATE exchange_rates
+                SET base_currency_id = ?, target_currency_id = ?, rate = ?
+                WHERE id = ?
+                """;
+
+        try (Connection conn = Database.get();){
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setInt(1, rate.getBaseCurrency().getId());
+            stmt.setInt(2, rate.getTargetCurrency().getId());
+            stmt.setBigDecimal(3, rate.getRate());
+            stmt.setInt(4, rate.getId());
+
+            int rows = stmt.executeUpdate();
+            if (rows == 0) {
+                throw new SQLException("Не удалось обновить курс: запись с id=" + rate.getId() + " не найдена");
+            }
+        }
     }
 }

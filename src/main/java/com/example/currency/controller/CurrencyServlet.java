@@ -1,14 +1,10 @@
 package com.example.currency.controller;
 
-import com.example.currency.dao.CurrencyDAO;
+
 import com.example.currency.dto.CurrencyDTO;
-import com.example.currency.exceptions.BadRequestException;
-import com.example.currency.exceptions.ConflictException;
-import com.example.currency.exceptions.NotFoundException;
 import com.example.currency.model.Currency;
 import com.example.currency.service.CurrencyMapper;
 import com.example.currency.service.CurrencyService;
-import com.example.currency.utils.JsonUtil;
 import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
@@ -23,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-@WebServlet(urlPatterns = {"/currencies", "/currency/*"})
+@WebServlet("/currencies/*")
 public class CurrencyServlet extends HttpServlet {
 
     private CurrencyService currencyService;
@@ -208,6 +204,46 @@ public class CurrencyServlet extends HttpServlet {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
             response.getWriter().write("{\"error\":\"Некорректный запрос\"}");
+        }
+    }
+
+    @Override
+    public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            /// 1. Достаём ID из URL /currencies/{id}
+            String pathInfo = request.getPathInfo(); // например: "/5"
+            if (pathInfo == null || pathInfo.equals("/")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"ID валюты не указан\"}");
+                return;
+            }
+
+            int id;
+            try {
+                id = Integer.parseInt(pathInfo.substring(1)); // убираем "/"
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Некорректный формат ID\"}");
+                return;
+            }
+
+            // 2. Удаляем валюту
+            boolean deleted = currencyService.deleteCurrency(id);
+
+            if (deleted) {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT); // 204
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND); // 404
+                response.getWriter().write("{\"error\":\"Валюта не найдена\"}");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+            response.getWriter().write("{\"error\":\"Ошибка при удалении валюты\"}");
         }
     }
 }

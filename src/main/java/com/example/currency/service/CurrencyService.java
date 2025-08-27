@@ -17,6 +17,7 @@ public class CurrencyService {
         this.currencyDAO = CurrencyDAO.getINSTANCE();
     }
 
+
     public List<Currency> getAllCurrencies() throws SQLException {
         return currencyDAO.getAllCurrencies();
     }
@@ -67,6 +68,13 @@ public class CurrencyService {
         }
 
         return currency;
+    }
+
+    public boolean deleteCurrency(int id) throws SQLException {
+        if(id <= 0){
+            throw new IllegalArgumentException("Некорректный ID");
+        }
+        return currencyDAO.deleteCurrency(id);
     }
 
     private String normalizeCode(String code) {

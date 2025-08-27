@@ -148,4 +148,14 @@ public class CurrencyDAO {
         return updateCurrency(currency.getId(), currency.getCode(), currency.getFullName(), currency.getSign());
     }
 
+    public boolean deleteCurrency(int id) throws SQLException {
+        String sql = "DELETE FROM currencies WHERE id = ?";
+
+        try (Connection conn = Database.get();){
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        }
+    }
 }
