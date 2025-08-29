@@ -1,5 +1,6 @@
 package com.example.currency.controller;
 
+import com.example.currency.dto.ExchangeRateDTO;
 import com.example.currency.model.ExchangeRate;
 import com.example.currency.service.ExchangeService;
 import com.google.gson.Gson;
@@ -31,7 +32,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
         try {
             // только список всех курсов
-            List<ExchangeRate> rates = exchangeService.getAllExchangeRate();
+            List<ExchangeRate> rates = exchangeService.getAllExchangeRates();
             String json = gson.toJson(rates);
 
             response.setStatus(HttpServletResponse.SC_OK);
